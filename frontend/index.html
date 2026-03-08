@@ -2,12 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Flow</title>
+    <link rel="stylesheet" href="/src/styles/theme.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
-    Flow With Flow
+    <div id="app" class="app-layout">
+      <nav class="sidebar card">
+        <div class="brand">
+          <img src="/logo.png" alt="Flow Logo" class="brand-icon" />
+          <h2><span style="color: red">F</span>low<span>.</span></h2>
+        </div>
+        <ul id="nav-list" class="nav-list"></ul>
+      </nav>
+
+      <main id="tab-content" class="main-content"></main>
+    </div>
   </body>
 </html>
