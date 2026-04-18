@@ -2,7 +2,6 @@
 # General
 # =========================
 docs/
-design/
 todo.md
 
 # =========================
@@ -13,6 +12,7 @@ package-lock.json # Optional: Ignore if you strictly use yarn/pnpm, but usually 
 
 # =========================
 # Environment Variables
+
 # =========================
 .env
 .env.local
