@@ -311,7 +311,7 @@ async function openStudentInfo(enroll: string) {
         <p class="flex justify-between border-b border-slate-200 pb-2"><span class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Year</span> <span class="font-medium text-slate-800">${info.year || 'N/A'}</span></p>
         <p class="flex justify-between border-b border-slate-200 pb-2"><span class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Role</span> <span class="font-medium text-slate-800">${info.isHosteller ? 'Hosteller' : 'Day Scholar'}</span></p>
         <p class="flex justify-between border-b border-slate-200 pb-2"><span class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Gender</span> <span class="font-medium text-slate-800 capitalize">${info.gender || 'N/A'}</span></p>
-        <p class="flex justify-between"><span class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Contact</span> <span class="font-mono text-slate-800">${info.phoneNumber || 'Not Provided'}</span></p>
+        <p class="flex justify-between"><span class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Contact</span> <span class="font-medium text-slate-800">${info.phoneNumber || 'Not Provided'}</span></p>
       </div>
     `;
   } else {
