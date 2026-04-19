@@ -99,6 +99,7 @@
             <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="statuses">
               <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="in">In</button>
               <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="out">Out</button>
+              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="leave">Leave</button>
             </div>
           </div>
         </div>
@@ -154,40 +155,61 @@
     <!-- Modals -->
     <!-- Manual Entry Dialog -->
     <dialog id="manual-entry-dialog" class="backdrop:bg-slate-900/50 rounded-2xl shadow-xl w-full max-w-md p-0 border-0 outline-none m-auto transition-[opacity,transform] open:animate-in open:fade-in open:zoom-in-95 starting:opacity-0 starting:scale-95 duration-200">
-      <div class="bg-white">
-        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-slate-900 font-outfit">Manual Entry</h3>
-          <button class="cursor-pointer close-dialog-btn p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
+      <div class="bg-white rounded-2xl overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h3 class="text-lg font-semibold text-slate-900 font-outfit">Add Entry</h3>
+          <button class="cursor-pointer close-dialog-btn p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600 rounded-lg transition-colors">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
-        <form id="manual-entry-form" class="p-6">
-          <label for="enrollment-input" class="block text-sm font-medium text-slate-700 mb-1">Student Enrollment No.</label>
-          <input type="text" id="enrollment-input" required class="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 0524CSE22">
-          
-          <div class="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-5">
+        <form id="manual-entry-form" class="p-6 space-y-4">
+          <!-- Enrollment input -->
+          <div>
+            <label for="enrollment-input" class="block text-sm font-medium text-slate-700 mb-1.5">Student Enrollment No.</label>
+            <div class="relative">
+              <input type="text" id="enrollment-input" autocomplete="off" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-9 transition-all" placeholder="e.g. 2025BCSE093">
+              <div id="enrollment-status-icon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                <i data-lucide="loader-2" class="w-4 h-4 text-slate-400 animate-spin hidden" id="enroll-checking-icon"></i>
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 hidden" id="enroll-valid-icon"></i>
+                <i data-lucide="x" class="w-4 h-4 text-red-400 hidden" id="enroll-invalid-icon"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini student profile preview (content injected by JS) -->
+          <div id="entry-student-preview" class="hidden rounded-xl border border-slate-100 overflow-hidden transition-all bg-white shadow-sm min-h-[64px]">
+          </div>
+
+          <!-- Mark on Leave checkbox -->
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+            <input type="checkbox" id="mark-on-leave" class="cursor-pointer w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+            <div>
+              <p class="text-sm font-medium text-slate-700">Mark on Leave</p>
+              <p class="text-xs text-slate-500">Student will be recorded as on leave (not a regular OUT entry)</p>
+            </div>
+          </label>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button type="button" class="cursor-pointer close-dialog-btn px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Cancel</button>
-            <button type="submit" class="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Submit</button>
+            <button type="submit" id="manual-entry-submit-btn" disabled class="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-40 disabled:pointer-events-none">Add Entry</button>
           </div>
         </form>
       </div>
     </dialog>
 
     <!-- Student Info Dialog -->
-    <dialog id="student-info-dialog" class="backdrop:bg-slate-900/50 rounded-2xl shadow-xl w-full max-w-sm p-0 border-0 outline-none m-auto transition-[opacity,transform] open:animate-in open:fade-in open:zoom-in-95 duration-200">
-      <div class="bg-white overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <h3 class="text-lg font-semibold text-slate-900 font-outfit">Student Profile</h3>
-          <button class="cursor-pointer close-dialog-btn p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-        <div id="student-info-content" class="p-6 text-center flex flex-col items-center">
-          <!-- Dynamically filled -->
-        </div>
-        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-center">
-          <button class="cursor-pointer close-dialog-btn px-6 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors w-full">Close</button>
-        </div>
+    <dialog id="student-info-dialog" class="backdrop:bg-slate-900/60 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-0 border-0 outline-none m-auto open:flex open:flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+        <h3 class="text-lg font-semibold text-slate-900">Student Profile</h3>
+        <button class="cursor-pointer close-dialog-btn p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Body: scrollable -->
+      <div class="flex flex-col overflow-y-auto flex-grow custom-scrollbar" id="student-info-content">
+        <!-- Shimmer injected here by JS while loading -->
       </div>
     </dialog>
 

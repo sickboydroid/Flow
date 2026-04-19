@@ -15,9 +15,10 @@ export interface StudentLog {
   _id: string;
   studentId: string;
   enrollment: string;
-  status: 'IN' | 'OUT' | 'NO ACTIVITY';
+  status: 'IN' | 'OUT' | 'LEAVE' | 'NO ACTIVITY';
   timestamp: string | Date | null;
   denied: boolean;
+  mode_of_entry?: 'SCAN' | 'MANUAL';
   studentName?: string;
   [key: string]: any;
 }
@@ -54,12 +55,12 @@ export const api = {
     }
   },
 
-  async getStudentStatus(enroll: string): Promise<'IN' | 'OUT'> {
+  async getStudentStatus(enroll: string): Promise<'IN' | 'OUT' | 'LEAVE'> {
     try {
       const res = await fetch(`${API_BASE}/student/status?enroll=${encodeURIComponent(enroll)}`);
       if (!res.ok) return 'IN';
       const data = await res.json();
-      return (data.status === 'ENTRY_IN' ? 'IN' : (data.status === 'ENTRY_OUT' ? 'OUT' : 'IN')) as 'IN' | 'OUT';
+      return (data.status as 'IN' | 'OUT' | 'LEAVE') || 'IN';
     } catch {
       return 'IN';
     }
@@ -99,7 +100,8 @@ export const api = {
       
       const parsedLogs = logsArray.map((log: any) => ({
         ...log,
-        status: log.type === 'ENTRY_IN' ? 'IN' : (log.type === 'ENTRY_OUT' ? 'OUT' : log.status || log.type)
+        // Status is now natively IN/OUT/LEAVE from the DB
+        status: log.status || log.type || 'NO ACTIVITY'
       }));
       return { logs: parsedLogs, totalCount };
     } catch {
@@ -115,6 +117,39 @@ export const api = {
        return res.ok;
     } catch {
        return false;
+    }
+  },
+
+  async addManualLog(enroll: string, type: 'IN' | 'OUT' | 'LEAVE'): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/student/log/manual?enroll=${encodeURIComponent(enroll)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type })
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async getStudentLogs(enroll: string, limit = 50, offset = 0): Promise<{ logs: any[], totalCount: number }> {
+    try {
+      const res = await fetch(`${API_BASE}/student/logs?enroll=${encodeURIComponent(enroll)}&limit=${limit}&offset=${offset}`);
+      if (!res.ok) return { logs: [], totalCount: 0 };
+      return await res.json();
+    } catch {
+      return { logs: [], totalCount: 0 };
+    }
+  },
+
+  async getStudentStats(enroll: string): Promise<any | null> {
+    try {
+      const res = await fetch(`${API_BASE}/student/stats?enroll=${encodeURIComponent(enroll)}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
     }
   }
 };

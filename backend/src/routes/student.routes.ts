@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { getInfo, getLogs, getStatus, updateStatus, updateLog } from "../controllers/student.controller.js";
+import { getInfo, getLogs, getStatus, updateStatus, updateLog, addManualLog, getStudentStats } from "../controllers/student.controller.js";
 
 const router = Router();
 
@@ -14,8 +14,10 @@ router.use((req: Request, res: Response, next: NextFunction): void => {
 
 router.get("/info", getInfo);
 router.get("/logs", getLogs);
+router.get("/stats", getStudentStats);
 router.get("/status", getStatus);
 router.post("/update/status", updateStatus);
 router.put("/update/log", updateLog);
+router.post("/log/manual", addManualLog);
 
 export default router;

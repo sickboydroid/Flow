@@ -122,8 +122,7 @@ export const getLogs = async (req: Request, res: Response): Promise<void> => {
       // Filter by Statuses from front end (e.g., 'IN', 'OUT')
       if (statuses) {
         const statusesArr = (statuses as string).split(',').map(s => s.toUpperCase());
-        // Map UI 'IN'/'OUT' back to DB ENUMS 'ENTRY_IN'/'ENTRY_OUT'
-        const dbStatuses = statusesArr.map(s => s === 'IN' ? 'ENTRY_IN' : s === 'OUT' ? 'ENTRY_OUT' : s);
+        const dbStatuses = statusesArr; // directly map IN, OUT, LEAVE
         
         // If "In" or "Out" is selected, filter based on the injected latestLog type.
         // If checking for latestLog type, we skip checking elements where it's null, unless we allow filtering by NO LOG. 
@@ -161,7 +160,7 @@ export const getLogs = async (req: Request, res: Response): Promise<void> => {
         return {
           _id: student.latestLog ? student.latestLog._id : null,
           enrollment: student.enrollment,
-          status: student.latestLog ? (student.latestLog.type === 'ENTRY_IN' ? 'IN' : 'ENTRY_OUT' ? 'OUT' : student.latestLog.type) : 'NO ACTIVITY',
+          status: student.latestLog ? student.latestLog.type : 'NO ACTIVITY',
           timestamp: student.latestLog ? student.latestLog.timestamp : null,
           denied: false,
           student: {

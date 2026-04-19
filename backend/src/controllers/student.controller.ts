@@ -25,11 +25,11 @@ export const getInfo = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// GET /api/student/logs?enroll={ENROLL}
+// GET /api/student/logs?enroll={ENROLL}&limit=&offset=
 export const getLogs = async (req: Request, res: Response): Promise<void> => {
   try {
     const enroll = getEnroll(req);
-    const { limit = '100', offset = '0', after, before, denied = 'false' } = req.query;
+    const { limit = '50', offset = '0', denied } = req.query;
 
     const query: any = { enrollment: enroll };
     
@@ -37,21 +37,67 @@ export const getLogs = async (req: Request, res: Response): Promise<void> => {
       query.denied = false;
     }
 
-    if (after || before) {
-        query.timestamp = {};
-        if (after) query.timestamp.$gte = new Date(after as string);
-        if (before) query.timestamp.$lte = new Date(before as string);
-    }
+    const parsedLimit = Math.min(parseInt(limit as string, 10), 50); // Cap at 50
+    const parsedOffset = parseInt(offset as string, 10);
 
-    const logs = await StudentLog.find(query)
-      .sort({ timestamp: -1 })
-      .skip(parseInt(offset as string, 10))
-      .limit(parseInt(limit as string, 10))
-      .populate("student");
+    const [logs, totalCount] = await Promise.all([
+      StudentLog.find(query)
+        .sort({ timestamp: -1 })
+        .skip(parsedOffset)
+        .limit(parsedLimit),
+      StudentLog.countDocuments(query)
+    ]);
     
-    res.status(200).json({ logs });
+    res.status(200).json({ logs, totalCount });
   } catch (error) {
     console.error("Error in student/logs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// GET /api/student/stats?enroll={ENROLL}
+export const getStudentStats = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const enroll = getEnroll(req);
+
+    const allLogs = await StudentLog.find({ enrollment: enroll, denied: false }).sort({ timestamp: 1 });
+
+    if (allLogs.length === 0) {
+      res.status(200).json({
+        totalLogs: 0, totalIn: 0, totalOut: 0, totalLeave: 0,
+        firstLogDate: null, lastActiveDate: null,
+        totalInDuration: 0, totalOutDuration: 0, totalLeaveDuration: 0
+      });
+      return;
+    }
+
+    const totalLogs = allLogs.length;
+    const totalIn = allLogs.filter(l => l.type === 'IN').length;
+    const totalOut = allLogs.filter(l => l.type === 'OUT').length;
+    const totalLeave = allLogs.filter(l => l.type === 'LEAVE').length;
+    const firstLogDate = allLogs[0].timestamp;
+    const lastActiveDate = allLogs[allLogs.length - 1].timestamp;
+
+    // Calculate durations: time spent IN, OUT, LEAVE by pairing consecutive logs
+    let totalInMs = 0, totalOutMs = 0, totalLeaveMs = 0;
+    for (let i = 0; i < allLogs.length - 1; i++) {
+      const curr = allLogs[i];
+      const next = allLogs[i + 1];
+      const durationMs = new Date(next.timestamp).getTime() - new Date(curr.timestamp).getTime();
+      if (curr.type === 'IN') totalInMs += durationMs;
+      else if (curr.type === 'OUT') totalOutMs += durationMs;
+      else if (curr.type === 'LEAVE') totalLeaveMs += durationMs;
+    }
+
+    res.status(200).json({
+      totalLogs, totalIn, totalOut, totalLeave,
+      firstLogDate, lastActiveDate,
+      totalInDuration: totalInMs,
+      totalOutDuration: totalOutMs,
+      totalLeaveDuration: totalLeaveMs
+    });
+  } catch (error) {
+    console.error("Error in student/stats:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -66,7 +112,7 @@ export const getStatus = async (req: Request, res: Response): Promise<void> => {
     const lastLog = await StudentLog.findOne({ enrollment: enroll, denied: false })
       .sort({ timestamp: -1 });
 
-    const status = lastLog ? lastLog.type : "ENTRY_IN";
+    const status = lastLog ? lastLog.type : "IN";
     
     res.status(200).json({ status });
   } catch (error) {
@@ -84,10 +130,10 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
     const lastLog = await StudentLog.findOne({ enrollment: enroll, denied: false })
       .sort({ timestamp: -1 });
     
-    const lastStatus = lastLog ? lastLog.type : "ENTRY_IN";
+    const lastStatus = lastLog ? lastLog.type : "IN";
     
-    // Create new log with flipped status
-    const newStatus = lastStatus === "ENTRY_IN" ? "ENTRY_OUT" : "ENTRY_IN";
+    // Create new log with flipped status (if LEAVE or OUT -> IN, if IN -> OUT)
+    const newStatus = ["OUT", "LEAVE"].includes(lastStatus) ? "IN" : "OUT";
     
     const newLog = new StudentLog({
       enrollment: enroll,
@@ -95,7 +141,8 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
       denied: false,
       timestamp: new Date(),
       lastedit_timestamp: new Date(),
-      update_count: 0
+      update_count: 0,
+      mode_of_entry: "SCAN"
     });
     
     await newLog.save();
@@ -130,9 +177,11 @@ export const updateLog = async (req: Request, res: Response): Promise<void> => {
     }
     
     if (status === 'IN' || status === 'ENTRY_IN') {
-      logToUpdate.type = 'ENTRY_IN';
+      logToUpdate.type = 'IN';
     } else if (status === 'OUT' || status === 'ENTRY_OUT') {
-      logToUpdate.type = 'ENTRY_OUT';
+      logToUpdate.type = 'OUT';
+    } else if (status === 'LEAVE') {
+      logToUpdate.type = 'LEAVE';
     }
 
     // Update timestamp if given. 
@@ -155,6 +204,37 @@ export const updateLog = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ log: logToUpdate });
   } catch (error) {
     console.error("Error in student/update/log:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// POST /api/student/log/manual
+export const addManualLog = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const enroll = getEnroll(req);
+    const { type } = req.body; // expect type from body: "IN", "OUT", "LEAVE"
+
+    if (!enroll) {
+      res.status(400).json({ error: "Enrollment is required" });
+      return;
+    }
+    
+    const newType = (type && ["IN", "OUT", "LEAVE"].includes(type.toUpperCase())) ? type.toUpperCase() : "IN";
+
+    const newLog = new StudentLog({
+      enrollment: enroll,
+      type: newType,
+      denied: false,
+      timestamp: new Date(),
+      lastedit_timestamp: new Date(),
+      update_count: 0,
+      mode_of_entry: "MANUAL"
+    });
+    
+    await newLog.save();
+    res.status(200).json({ log: newLog });
+  } catch (error) {
+    console.error("Error in addManualLog:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
