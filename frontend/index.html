@@ -45,16 +45,19 @@
         <!-- Right Panel: Recent Logs -->
         <section class="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full relative">
           <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Recent Logs</h2>
+            <div>
+              <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Recent Logs</h2>
+              <p id="recent-logs-subtitle" class="text-xs text-slate-400 mt-0.5 hidden"></p>
+            </div>
             <button id="add-entry-btn" class="cursor-pointer inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 outline-none">
               <i data-lucide="plus" class="w-4 h-4 pointer-events-none"></i>
               Add Entry
             </button>
           </div>
-          <div id="recent-logs-container" class="flex-grow min-h-0 overflow-y-scroll p-4 space-y-3 relative custom-scrollbar">
+          <div id="recent-logs-container" class="flex-grow min-h-0 overflow-y-scroll overflow-x-auto relative custom-scrollbar">
             <!-- Logs Injected Here -->
             <div class="flex justify-center items-center h-full text-slate-400">
-              <div class="flex flex-col items-center gap-2">
+              <div class="flex flex-col items-center gap-2 pt-10">
                 <i data-lucide="history" class="w-8 h-8 opacity-50"></i>
                 <p class="text-sm">No recent logs</p>
               </div>
@@ -78,24 +81,24 @@
           </div>
 
           <!-- Filters Group -->
-          <div class="flex flex-wrap items-center gap-4 flex-grow md:justify-end">
+          <div class="flex flex-wrap items-center gap-6 flex-grow md:justify-end">
             <!-- Roles Multi-select Pill Group -->
-            <div class="flex p-0.5 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group" data-filter-type="roles">
-              <button class="px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="day scholars">Day Scholars</button>
-              <button class="px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="hostellers">Hostellers</button>
+            <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="roles">
+              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="day scholars">Day Scholars</button>
+              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="hostellers">Hostellers</button>
             </div>
             
             <!-- Genders -->
-            <div class="flex p-0.5 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group" data-filter-type="genders">
-              <button class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="male">Male</button>
-              <button class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="female">Female</button>
-              <button class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="other">Other</button>
+            <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="genders">
+              <button class="cursor-pointer px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="male">Male</button>
+              <button class="cursor-pointer px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="female">Female</button>
+              <button class="cursor-pointer px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="other">Other</button>
             </div>
 
             <!-- Statuses -->
-            <div class="flex p-0.5 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group" data-filter-type="statuses">
-              <button class="px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="in">In</button>
-              <button class="px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="out">Out</button>
+            <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="statuses">
+              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="in">In</button>
+              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="out">Out</button>
             </div>
           </div>
         </div>
@@ -105,7 +108,7 @@
           <table class="w-full text-left border-collapse text-sm whitespace-nowrap min-w-[700px]">
             <thead class="sticky top-0 bg-white shadow-sm z-10 text-slate-500 uppercase tracking-wider text-[11px] font-semibold">
               <tr>
-                <th class="py-3 px-4 font-semibold w-12 text-center">Pic</th>
+                <th class="py-3 px-4 font-semibold w-12 text-center"></th>
                 <th class="py-3 px-4 font-semibold text-blue-600/80">Enrollment</th>
                 <th class="py-3 px-4 font-semibold text-blue-600/80">Name</th>
                 <th class="py-3 px-4 font-semibold text-blue-600/80">Gender</th>
@@ -125,11 +128,11 @@
         <!-- Footer Pagination -->
         <div class="p-3 border-t border-slate-100 bg-white flex justify-between items-center text-sm">
           <div class="flex items-center gap-3">
-            <button id="logs-prev-btn" class="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors">
+            <button id="logs-prev-btn" class="cursor-pointer p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors">
               <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
             <span class="font-medium text-slate-600" id="logs-page-indicator">Page: 1/1</span>
-            <button id="logs-next-btn" class="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors">
+            <button id="logs-next-btn" class="cursor-pointer p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors">
               <i data-lucide="arrow-right" class="w-5 h-5"></i>
             </button>
           </div>
@@ -154,7 +157,7 @@
       <div class="bg-white">
         <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <h3 class="text-lg font-semibold text-slate-900 font-outfit">Manual Entry</h3>
-          <button class="close-dialog-btn p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
+          <button class="cursor-pointer close-dialog-btn p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
@@ -175,7 +178,7 @@
       <div class="bg-white overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 class="text-lg font-semibold text-slate-900 font-outfit">Student Profile</h3>
-          <button class="close-dialog-btn p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
+          <button class="cursor-pointer close-dialog-btn p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>

@@ -9,6 +9,7 @@ let recentLogs: StudentLog[] = [];
 let lastScannedStudent: StudentInfo | null = null;
 let lastScannedStatus: 'IN' | 'OUT' | 'NO ACTIVITY' | null = null;
 let isAcceptingScans = true;
+let activeTab = 'dashboard';
 
 // Logs Tab State
 let currentLogsOffset = 0;
@@ -68,10 +69,13 @@ async function init() {
 }
 
 function renderLogs() {
+  const subtitle = document.getElementById('recent-logs-subtitle')!;
+  
   if (recentLogs.length === 0) {
+    subtitle.classList.add('hidden');
     recentLogsContainer.innerHTML = `
       <div class="flex justify-center items-center h-full text-slate-400">
-        <div class="flex flex-col items-center gap-2">
+        <div class="flex flex-col items-center gap-2 pt-10">
           <i data-lucide="history" class="w-8 h-8 opacity-50"></i>
           <p class="text-sm">No recent logs</p>
         </div>
@@ -81,6 +85,10 @@ function renderLogs() {
     return;
   }
 
+  const uniqueStudents = new Set(recentLogs.map(l => l.enrollment)).size;
+  subtitle.textContent = `${uniqueStudents} students in the last hour`;
+  subtitle.classList.remove('hidden');
+
   // Group to find latest log of each student
   const latestLogPerStudent = new Map<string, string>(); // enroll -> logId
   for (const log of recentLogs) {
@@ -89,38 +97,56 @@ function renderLogs() {
     }
   }
 
-  recentLogsContainer.innerHTML = recentLogs.map((log) => {
+  const rowsHtml = recentLogs.map((log) => {
     const isLatest = latestLogPerStudent.get(log.enrollment) === log._id;
-    const time = log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
-    const statusColor = log.status === 'IN' ? 'text-emerald-600 bg-emerald-50' : log.status === 'OUT' ? 'text-amber-600 bg-amber-50' : 'text-slate-500 bg-slate-100';
+    const isOut = log.status === 'OUT';
+    const statusColor = isOut ? 'bg-amber-500' : 'bg-emerald-500';
+    const timeStr = timeSince(log.timestamp as string);
+    const studentName = log.student ? `${log.student.firstName} ${log.student.lastName}` : 'Unknown';
+    const gender = log.student?.gender || 'Unknown';
+    const role = log.student?.isHosteller ? 'Hosteller' : 'Day-Scholar';
+    const rowClass = "flex items-center justify-between p-3.5 border-b border-slate-100 hover:bg-slate-100/50 cursor-pointer even:bg-slate-50 transition-colors";
     
     return `
-      <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-100 shadow-sm transition-all hover:bg-slate-50 cursor-pointer" data-log-enroll="${log.enrollment}">
-        <div class="w-10 h-10 rounded-full bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
-            <img src="http://localhost:5000/profilepics/${log.enrollment.toLowerCase()}.jpg" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${log.student?.firstName || log.enrollment}&background=random'" />
-        </div>
-        <div class="flex-grow min-w-0">
-          <div class="flex justify-between items-center mb-0.5">
-            <h4 class="text-sm font-semibold text-slate-700 truncate">${log.student ? (log.student.firstName + ' ' + log.student.lastName) : log.enrollment}</h4>
-            <span class="text-xs font-medium text-slate-500">${time}</span>
+      <div class="${rowClass}" data-log-enroll="${log.enrollment}">
+        <div class="flex items-center gap-3.5 overflow-hidden">
+          <div class="w-11 h-11 rounded-full overflow-hidden bg-slate-200 shadow-sm shrink-0 ring-2 ring-slate-100/50">
+              <img src="http://localhost:5000/profilepics/${log.enrollment.toLowerCase()}.jpg" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${studentName}&background=random'" />
           </div>
-          <div class="flex items-center gap-2">
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${statusColor}">
-              ${log.status}
-            </span>
-            ${log.denied ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-red-50 text-red-600">DENIED</span>` : ''}
+          <div class="min-w-0 flex flex-col justify-center">
+            <div class="flex items-center gap-2 mb-0.5">
+              <h4 class="text-[15px] font-medium text-slate-800 truncate tracking-tight">${studentName}</h4>
+              <span class="w-2 h-2 rounded-full shadow-sm ${statusColor}" title="${log.status}"></span>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+              <span class="font-mono text-slate-400 font-semibold tracking-wider text-xs">${log.enrollment}</span>
+              <div class="flex items-center gap-1.5 ml-1">
+                <span class="px-1.5 py-0.5 rounded-md border border-slate-200 bg-white text-slate-500 capitalize leading-none shadow-sm">${gender}</span>
+                <span class="px-1.5 py-0.5 rounded-md border border-slate-200 bg-white text-slate-500 leading-none shadow-sm">${role}</span>
+                ${log.denied ? `<span class="px-1.5 py-0.5 rounded-md border border-red-200 bg-red-50 text-red-600 font-bold uppercase leading-none shadow-sm">Denied</span>` : ''}
+              </div>
+            </div>
           </div>
         </div>
-        ${isLatest ? `
-        <button class="deny-log-btn cursor-pointer shrink-0 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id="${log._id}" data-enroll="${log.enrollment}">
-          <i data-lucide="x" class="w-4 h-4 pointer-events-none"></i>
-        </button>
-        ` : `
-        <div class="w-8 shrink-0"></div>
-        `}
+        <div class="flex items-center gap-3 shrink-0 pl-3">
+          <span class="text-xs font-semibold text-slate-400 tracking-wide">${timeStr} <span class="font-normal opacity-70">ago</span></span>
+          <div class="flex items-center justify-end min-w-[32px]">
+            ${isLatest ? `
+            <button class="deny-log-btn cursor-pointer p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full border border-transparent hover:border-red-100 transition-all focus:outline-none focus:ring-2 focus:ring-red-100 shadow-sm bg-white" data-id="${log._id}" data-enroll="${log.enrollment}" title="Deny Entry">
+              <i data-lucide="x" class="w-[16px] h-[16px] pointer-events-none"></i>
+            </button>
+            ` : ''}
+          </div>
+        </div>
       </div>
     `;
   }).join('');
+
+  recentLogsContainer.innerHTML = `
+    <div class="flex flex-col w-full h-full min-w-[400px]">
+      ${rowsHtml}
+    </div>
+  `;
   
   createIcons({ icons: { History, X }, nameAttr: 'data-lucide', root: recentLogsContainer });
 
@@ -161,7 +187,6 @@ function renderLastScanned() {
     <div class="flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
       <div class="relative mb-5">
         <img src="http://localhost:5000/profilepics/${lastScannedStudent.enrollment.toLowerCase()}.jpg" class="w-36 h-36 rounded-full object-cover shadow-md border-4 border-white" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${lastScannedStudent.firstName}&background=random'" />
-        <span class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-white ${lastScannedStatus === 'IN' ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
       </div>
       <h3 class="text-xl font-bold text-slate-900 font-outfit mb-1">${lastScannedStudent.firstName} ${lastScannedStudent.lastName}</h3>
       <p class="text-sm font-medium text-slate-500 mb-4">${lastScannedStudent.enrollment}</p>
@@ -199,7 +224,7 @@ function renderLastScanned() {
 
 // Logic implementations
 async function scanRfid(rfid: string) {
-  if (!isAcceptingScans) return;
+  if (!isAcceptingScans || activeTab !== 'dashboard') return;
 
   const enroll = await api.isValidRfid(rfid);
   if (!enroll) {
@@ -337,6 +362,10 @@ window.addEventListener('keydown', (e) => {
 });
 
 function simulateScan(rfid: string) {
+  if (activeTab !== 'dashboard') {
+    showSnackbar('Switch back to Dashboard to scan', 'info');
+    return;
+  }
   if (!isAcceptingScans) {
     showSnackbar('Scanning is paused', 'info');
     return;
@@ -496,7 +525,8 @@ document.querySelectorAll('.logs-filter-group button').forEach(btn => {
 // Tab Navigation
 document.querySelectorAll('.nav-tab').forEach(tab => {
   tab.addEventListener('click', (e) => {
-    const target = (e.currentTarget as HTMLElement).dataset.tab;
+    const target = (e.currentTarget as HTMLElement).dataset.tab!;
+    activeTab = target;
     
     // Manage Views visibility
     document.getElementById('view-dashboard')!.style.display = 'none';
