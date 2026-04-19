@@ -11,6 +11,7 @@ export interface IStudent extends Document {
   branch: string;
   year: number;
   gender: "male" | "female" | "other";
+  phoneNumber?: string;
 }
 
 const StudentSchema: Schema = new Schema(
@@ -29,6 +30,7 @@ const StudentSchema: Schema = new Schema(
       enum: ["male", "female", "other"],
       required: true,
     },
+    phoneNumber: { type: String },
   },
   { timestamps: true },
 );

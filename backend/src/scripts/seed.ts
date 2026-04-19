@@ -34,11 +34,35 @@ const seedDatabase = async () => {
     await Student.deleteMany({});
     await StudentLog.deleteMany({});
 
-    console.log("Generating 200 students...");
+    console.log("Generating 50 students...");
     const students = [];
     const rfids = new Set<string>();
 
-    for (let i = 0; i < 200; i++) {
+    const targetStudents = [
+      { firstName: 'Junaid', lastName: 'Ashraf', enrollment: '2025BCSE093', address: 'Chakpath, Anantnag', branch: 'Computer Science Engineering', year: 2025, gender: 'male' },
+      { firstName: 'Shahid', lastName: 'Rasool', enrollment: '2025BCSE080', address: 'Srinagar, JK', branch: 'Computer Science Engineering', year: 2025, gender: 'male' },
+      { firstName: 'Mudassir', lastName: 'Ahmed', enrollment: '2025BMME001', address: 'Batmaloo, JK', branch: 'Mechanical Engineering', year: 2025, gender: 'male' },
+      { firstName: 'Haleem', lastName: 'Zargar', enrollment: '2025BIT094', address: 'Srinagar, JK', branch: 'Information Technology', year: 2025, gender: 'male' },
+      { firstName: 'Sohaib', lastName: 'Bashir', enrollment: '2025BCSE094', address: 'Andhra Pradesh', branch: 'Computer Science Engineering', year: 2025, gender: 'male' }
+    ];
+
+    // Seed specific students first
+    for (let i = 0; i < targetStudents.length; i++) {
+        let rfid = faker.string.hexadecimal({ length: 8, casing: "upper" });
+        while (rfids.has(rfid)) { rfid = faker.string.hexadecimal({ length: 8, casing: "upper" }); }
+        rfids.add(rfid);
+        
+        students.push({
+            ...targetStudents[i],
+            rfid,
+            picUrl: `${targetStudents[i].enrollment.toLowerCase()}.jpg`,
+            isHosteller: faker.datatype.boolean(),
+            phoneNumber: faker.phone.number({ style: 'international' })
+        })
+    }
+
+    // Seed remaining students up to 50
+    for (let i = 0; i < 45; i++) {
       let rfid = faker.string.hexadecimal({ length: 8, casing: "upper" });
       while (rfids.has(rfid)) {
         rfid = faker.string.hexadecimal({ length: 8, casing: "upper" });
@@ -48,7 +72,11 @@ const seedDatabase = async () => {
       const gender = faker.helpers.arrayElement(GENDERS);
       const firstName = faker.person.firstName(gender === "other" ? undefined : gender as any);
       const lastName = faker.person.lastName();
-      const enrollment = generateEnrollment(i);
+      let enrollment = generateEnrollment(i);
+      // Ensure no collision with target students
+      while (students.some(s => s.enrollment === enrollment)) {
+          enrollment = generateEnrollment(i + 100);
+      }
 
       students.push({
         enrollment,
@@ -61,8 +89,15 @@ const seedDatabase = async () => {
         branch: faker.helpers.arrayElement(BRANCHES),
         year: parseInt(enrollment.substring(0, 4)),
         gender,
+        phoneNumber: faker.phone.number({ style: 'international' })
       });
     }
+
+    // Output target RFIDs
+    const targetRfids = students.slice(0, 5).map(s => s.rfid);
+    console.log("=== TARGET RFIDS FOR FRONTEND ===");
+    console.log(JSON.stringify(targetRfids));
+    console.log("=================================");
 
     await Student.insertMany(students);
     console.log(`Successfully seeded ${students.length} students.`);

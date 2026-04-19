@@ -18,8 +18,19 @@ const StudentLogSchema: Schema = new Schema(
     lastedit_timestamp: { type: Date, default: Date.now },
     update_count: { type: Number, default: 0 },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+StudentLogSchema.virtual("student", {
+  ref: "Student",
+  localField: "enrollment",
+  foreignField: "enrollment",
+  justOne: true,
+});
 
 export const StudentLog = mongoose.model<IStudentLog>(
   "StudentLog",
