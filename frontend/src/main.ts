@@ -1,4 +1,5 @@
 import './styles/style.css';
+import './space';
 import { createIcons, LayoutDashboard, List, BarChart2, Plus, ArrowDown, History, UserX, X, Search, Loader2, ArrowLeft, ArrowRight, Check } from 'lucide';
 import { api } from './api/client';
 import type { StudentInfo, StudentLog } from './api/client';

@@ -7,7 +7,10 @@
     <meta name="description" content="Flow - Automated RFID-based gate logbook system" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   </head>
-  <body class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex flex-col font-sans selection:bg-blue-100">
+  <body class="text-slate-800 h-screen overflow-hidden flex flex-col font-sans selection:bg-blue-100" style="background:#f0f2f6">
+    <!-- Space background canvas — fixed, behind everything, no pointer events -->
+    <canvas id="space-canvas" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.9;"></canvas>
+
     <header class="sticky top-4 z-20 flex justify-center w-full pointer-events-none">
       <div class="bg-white/80 backdrop-blur-md rounded-full border border-slate-200 shadow-sm flex py-1.5 px-1.5 gap-1 pointer-events-auto">
         <button class="nav-tab active cursor-pointer inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-colors bg-blue-50 text-blue-700 hover:bg-blue-100" data-tab="dashboard">
