@@ -812,18 +812,25 @@ document.querySelectorAll('.logs-filter-group button').forEach(btn => {
     const filterType = group.dataset.filterType as string;
     const value = button.dataset.value as string;
     
-    if (button.classList.contains('bg-white')) {
-       button.classList.remove('bg-white', 'shadow-sm', 'text-slate-900', 'font-semibold');
-       button.classList.add('text-slate-600', 'font-medium');
-       if (filterType === 'roles') selectedRoles = selectedRoles.filter(v => v !== value);
-       else if (filterType === 'genders') selectedGenders = selectedGenders.filter(v => v !== value);
-       else if (filterType === 'statuses') selectedStatuses = selectedStatuses.filter(v => v !== value);
+    const wasActive = button.classList.contains('bg-white');
+
+    // Reset styles for all buttons in this group
+    group.querySelectorAll('button').forEach(b => {
+      b.classList.remove('bg-white', 'shadow-sm', 'text-slate-900', 'font-semibold');
+      b.classList.add('text-slate-600', 'font-medium');
+    });
+
+    // Clear and optionally set new value
+    if (wasActive) {
+      if (filterType === 'roles') selectedRoles = [];
+      else if (filterType === 'genders') selectedGenders = [];
+      else if (filterType === 'statuses') selectedStatuses = [];
     } else {
-       button.classList.add('bg-white', 'shadow-sm', 'text-slate-900', 'font-semibold');
-       button.classList.remove('text-slate-600', 'font-medium');
-       if (filterType === 'roles') selectedRoles.push(value);
-       else if (filterType === 'genders') selectedGenders.push(value);
-       else if (filterType === 'statuses') selectedStatuses.push(value);
+      button.classList.add('bg-white', 'shadow-sm', 'text-slate-900', 'font-semibold');
+      button.classList.remove('text-slate-600', 'font-medium');
+      if (filterType === 'roles') selectedRoles = [value];
+      else if (filterType === 'genders') selectedGenders = [value];
+      else if (filterType === 'statuses') selectedStatuses = [value];
     }
     
     currentLogsOffset = 0;
