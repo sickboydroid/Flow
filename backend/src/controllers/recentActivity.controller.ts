@@ -33,19 +33,10 @@ interface MixedLog {
 export const listRecentActivity = async (req: Request, res: Response): Promise<void> => {
   try {
     const limit = clampLimit(req.query.limit);
+    const [studentLogs, vehicleLogs, visitorLogs] = await getRecentLogs(limit);
 
-    // Each domain is queried for its newest `limit` events; we then merge
-    // and slice. This keeps the work O(limit) per collection rather than
-    // pulling whole tables and sorting in memory.
-    const [studentLogs, vehicleLogs, visitorLogs] = await Promise.all([
-      StudentLog.find({ deleted: false })
-        .sort({ timestamp: -1 })
-        .limit(limit)
-        .populate("student")
-        .lean(),
-      VehicleLog.find().sort({ timestamp: -1 }).limit(limit).lean(),
-      VisitorLog.find().sort({ timestamp: -1 }).limit(limit).lean(),
-    ]);
+    // in case you only want unique logs of each type (like each student has only the latest log in recent logs)
+    // const [studentLogs, vehicleLogs, visitorLogs] = await getRecentLogsRecent(limit);
 
     const mixed: MixedLog[] = [
       ...studentLogs.map((l) => ({ ...l, logType: "student" as const })),
@@ -61,6 +52,71 @@ export const listRecentActivity = async (req: Request, res: Response): Promise<v
     res.status(500).json({ error: "Failed to load recent activity" });
   }
 };
+
+/**
+ * Returns recent limit logs from all three categories
+ */
+async function getRecentLogs(limit: number) {
+  // Each domain is queried for its newest `limit` events; we then merge
+  // and slice. This keeps the work O(limit) per collection rather than
+  // pulling whole tables and sorting in memory.
+  return Promise.all([
+    StudentLog.find({ deleted: false })
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .populate("student")
+      .lean(),
+    VehicleLog.find().sort({ timestamp: -1 }).limit(limit).lean(),
+    VisitorLog.find().sort({ timestamp: -1 }).limit(limit).lean(),
+  ]);
+}
+
+
+/**
+ * Same as getRecentLogs(...), however only returns unique students and vehicles from each category
+ * For example if a student has logged multiple times, it will only show its latest log in the recent logs
+ */
+async function getRecentLogsRecent(limit: number) {
+  // Each domain is queried for its newest `limit` events; we then merge
+  // and slice. This keeps the work O(limit) per collection rather than
+  // pulling whole tables and sorting in memory.
+  return Promise.all([
+    StudentLog.aggregate([
+      { $match: { deleted: false } },
+      { $sort: { timestamp: -1 } },   // latest first per student
+      {
+        $group: {
+          _id: "$enrollment",
+          doc: { $first: "$$ROOT" }
+        }
+      },
+      { $replaceRoot: { newRoot: "$doc" } },
+      { $limit: limit },
+      // populate
+      {
+        $lookup: {
+          from: "students",              // collection name
+          localField: "enrollment",
+          foreignField: "enrollment",
+          as: "student"
+        }
+      },
+      { $unwind: "$student" }
+    ]),
+    VehicleLog.aggregate([
+      { $sort: { timestamp: -1 } },
+      {
+        $group: {
+          _id: "$plate",
+          doc: { $first: "$$ROOT" }           // pick latest per plate
+        }
+      },
+      { $replaceRoot: { newRoot: "$doc" } },
+      { $limit: limit }
+    ]),
+    VisitorLog.find().sort({ timestamp: -1 }).limit(limit).lean(),
+  ]);
+}
 
 function clampLimit(raw: unknown): number {
   const parsed = parseInt(String(raw ?? DEFAULT_LIMIT), 10);
