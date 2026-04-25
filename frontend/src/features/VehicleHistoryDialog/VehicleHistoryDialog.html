@@ -1,0 +1,47 @@
+<dialog data-dialog class="backdrop:bg-slate-900/60 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] p-0 border-0 outline-none m-auto open:flex open:flex-col overflow-hidden">
+  <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+    <div>
+      <h3 data-title class="text-lg font-semibold text-slate-900">Vehicle History</h3>
+      <p data-subtitle class="text-xs text-slate-400"></p>
+    </div>
+    <button data-close class="cursor-pointer p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+  </div>
+  <div data-content class="flex flex-col overflow-y-auto flex-grow custom-scrollbar"></div>
+</dialog>
+
+<template data-loading>
+  <div class="p-10 flex justify-center"><div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>
+</template>
+
+<template data-empty>
+  <div class="p-10 text-center text-slate-400">No history found</div>
+</template>
+
+<template data-table>
+  <table class="w-full text-sm border-collapse">
+    <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider font-semibold sticky top-0">
+      <tr>
+        <th class="px-5 py-3">Date</th>
+        <th class="px-5 py-3">Time</th>
+        <th class="px-5 py-3">Type of Vehicle</th>
+        <th class="px-5 py-3">Direction</th>
+        <th class="px-5 py-3 text-right">Duration</th>
+        <th class="px-5 py-3">Remarks</th>
+      </tr>
+    </thead>
+    <tbody data-rows></tbody>
+  </table>
+</template>
+
+<template data-row>
+  <tr class="border-b border-slate-100 even:bg-slate-50/50 hover:bg-slate-100/30 transition-colors">
+    <td data-date class="px-5 py-3 text-slate-600"></td>
+    <td data-time class="px-5 py-3 text-slate-500"></td>
+    <td data-vehicle-type class="px-5 py-3 text-slate-600"></td>
+    <td class="px-5 py-3"><span data-direction class="px-2 py-0.5 rounded-full text-xs font-semibold"></span></td>
+    <td data-duration class="px-5 py-3 text-right text-slate-500 font-medium whitespace-nowrap"></td>
+    <td data-remarks class="px-5 py-3 text-slate-400 italic"></td>
+  </tr>
+</template>

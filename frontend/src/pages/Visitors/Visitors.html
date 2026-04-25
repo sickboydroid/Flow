@@ -1,0 +1,44 @@
+<div class="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between bg-slate-50 z-10">
+  <div data-slot="search" class="relative w-full md:w-72"></div>
+  <div class="flex items-center gap-3">
+    <div data-slot="filter-status"></div>
+    <div data-slot="filter-date"></div>
+  </div>
+</div>
+<div class="flex-grow min-h-0 overflow-y-auto custom-scrollbar relative">
+  <div data-list></div>
+  <div data-loading class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm z-20 flex items-center justify-center">
+    <i data-lucide="loader-2" class="w-8 h-8 text-blue-500 animate-spin"></i>
+  </div>
+</div>
+<div data-slot="pagination" class="p-3 border-t border-slate-100 bg-white flex justify-between items-center text-sm shrink-0 z-10"></div>
+
+<template data-row>
+  <div class="visitor-row flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer even:bg-slate-50/40 transition-colors">
+    <div class="flex items-center gap-4">
+      <div data-initials class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0"></div>
+      <div>
+        <p data-name class="font-semibold text-slate-800"></p>
+        <div class="flex items-center gap-2 mt-0.5">
+          <span data-dept class="text-xs text-slate-500 hidden"></span>
+          <span data-address class="text-xs text-slate-400 hidden"></span>
+        </div>
+      </div>
+    </div>
+    <div class="text-right shrink-0">
+      <span data-state class="px-2 py-0.5 rounded-full text-xs font-semibold"></span>
+      <p data-time-in class="text-xs text-slate-400 mt-1"></p>
+    </div>
+  </div>
+</template>
+
+<template data-empty>
+  <div class="flex flex-col items-center justify-center h-full text-slate-400 gap-3 p-10">
+    <i data-lucide="users" class="w-10 h-10 opacity-40"></i>
+    <p class="text-sm">No visitors found</p>
+  </div>
+</template>
+
+<template data-error>
+  <div class="p-8 text-center text-red-400">Failed to load visitors</div>
+</template>

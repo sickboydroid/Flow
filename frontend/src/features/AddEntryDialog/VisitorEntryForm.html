@@ -1,0 +1,30 @@
+<div class="p-6 space-y-4">
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">First Name <span class="text-red-400">*</span></label>
+      <input type="text" data-first-name class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ahmad">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">Last Name <span class="text-red-400">*</span></label>
+      <input type="text" data-last-name class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Malik">
+    </div>
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-slate-700 mb-1.5">Address <span class="text-slate-400 font-normal">(optional)</span></label>
+    <input type="text" data-address class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Street, City">
+  </div>
+  <div class="relative">
+    <label class="block text-sm font-medium text-slate-700 mb-1.5">Department / Office to Visit <span class="text-slate-400 font-normal">(optional)</span></label>
+    <input type="text" data-dept autocomplete="off" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="e.g. Accounts, Principal Office...">
+    <div data-dept-hint class="hidden absolute z-30 w-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden"></div>
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-slate-700 mb-1.5">Remarks <span class="text-slate-400 font-normal">(optional)</span></label>
+    <input type="text" data-remarks class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Purpose of visit...">
+  </div>
+  <p class="text-xs text-slate-400 bg-slate-50 rounded-lg p-3">
+    <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1 text-slate-400"></i>
+    To mark a visitor as left, find them in the <strong>Visitors</strong> tab and click their entry.
+  </p>
+  <button data-submit class="w-full py-2.5 text-sm font-semibold text-white bg-amber-600 rounded-xl shadow hover:bg-amber-700 transition-colors cursor-pointer">Add Visitor Entry</button>
+</div>

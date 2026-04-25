@@ -3,218 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flow Dashboard</title>
-    <meta name="description" content="Flow - Automated RFID-based gate logbook system" />
+    <title>Flow — Gate Logbook</title>
+    <meta name="description" content="Flow — RFID-based gate logbook system for students, vehicles, and visitors." />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   </head>
   <body class="text-slate-800 h-screen overflow-hidden flex flex-col font-sans selection:bg-blue-100" style="background:#f0f2f6">
-    <!-- Space background canvas — fixed, behind everything, no pointer events -->
+    <!--
+      Application shell.
+      Everything dynamic is mounted by JS into the slots below:
+        #space-canvas     — animated background (SpaceBackground)
+        #nav-root         — top navigation tabs (NavBar)
+        #app              — active page (Router)
+        #snackbar-container — toast queue (Snackbar)
+        #dialog-root      — modal dialogs are appended here at runtime
+    -->
     <canvas id="space-canvas" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.9;"></canvas>
 
-    <header class="sticky top-4 z-20 flex justify-center w-full pointer-events-none">
-      <div class="bg-white/80 backdrop-blur-md rounded-full border border-slate-200 shadow-sm flex py-1.5 px-1.5 gap-1 pointer-events-auto">
-        <button class="nav-tab active cursor-pointer inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-colors bg-blue-50 text-blue-700 hover:bg-blue-100" data-tab="dashboard">
-          <i data-lucide="layout-dashboard" class="w-4 h-4 pointer-events-none"></i>
-          Dashboard
-        </button>
-        <button class="nav-tab cursor-pointer inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors" data-tab="logs">
-          <i data-lucide="list" class="w-4 h-4 pointer-events-none"></i>
-          Logs
-        </button>
-        <button class="nav-tab cursor-pointer inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors" data-tab="analytics">
-          <i data-lucide="bar-chart-2" class="w-4 h-4 pointer-events-none"></i>
-          Analytics
-        </button>
-      </div>
-    </header>
+    <header id="nav-root" class="sticky top-4 z-20 flex justify-center w-full pointer-events-none"></header>
 
-    <main id="app" class="flex-grow w-full max-w-6xl mx-auto p-4 md:p-6 overflow-hidden flex flex-col min-h-0 relative z-10 pt-6">
-      <!-- Dashboard View -->
-      <div id="view-dashboard" class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full min-h-0">
-        <!-- Left Panel: Last Scanned -->
-        <section class="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full">
-          <div class="px-5 py-4 border-b border-slate-100">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Last Scanned</h2>
-          </div>
-          <div id="last-scanned-container" class="flex-grow p-6 flex flex-col items-center justify-center text-center">
-            <!-- Dynamic Content Injected Here -->
-            <div class="flex flex-col items-center text-slate-400 gap-3">
-              <i data-lucide="user-x" class="w-12 h-12 opacity-50"></i>
-              <p class="text-sm">No recent scans</p>
-            </div>
-          </div>
-        </section>
+    <main id="app" class="flex-grow w-full max-w-6xl mx-auto p-4 md:p-6 overflow-hidden flex flex-col min-h-0 relative z-10 pt-6"></main>
 
-        <!-- Right Panel: Recent Logs -->
-        <section class="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full relative">
-          <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
-            <div>
-              <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Recent Logs</h2>
-              <p id="recent-logs-subtitle" class="text-xs text-slate-400 mt-0.5 hidden"></p>
-            </div>
-            <button id="add-entry-btn" class="cursor-pointer inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 outline-none">
-              <i data-lucide="plus" class="w-4 h-4 pointer-events-none"></i>
-              Add Entry
-            </button>
-          </div>
-          <div id="recent-logs-container" class="flex-grow min-h-0 overflow-y-scroll overflow-x-auto relative custom-scrollbar">
-            <!-- Logs Injected Here -->
-            <div class="flex justify-center items-center h-full text-slate-400">
-              <div class="flex flex-col items-center gap-2 pt-10">
-                <i data-lucide="history" class="w-8 h-8 opacity-50"></i>
-                <p class="text-sm">No recent logs</p>
-              </div>
-            </div>
-          </div>
-          
-          <button id="scroll-bottom-btn" class="absolute bottom-6 left-1/2 -translate-x-1/2 min-w-10 h-10 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-all opacity-0 translate-y-4 pointer-events-none z-10">
-            <i data-lucide="arrow-down" class="w-5 h-5"></i>
-          </button>
-        </section>
-      </div>
-
-      <!-- Other Views (hidden for now) -->
-      <div id="view-logs" class="hidden flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full max-h-[calc(100vh-120px)]">
-        <!-- Top Toolbar -->
-        <div class="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between bg-slate-50 z-10 w-full relative">
-          <!-- Search -->
-          <div class="relative w-full md:w-64">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-            <input type="text" id="logs-search-input" placeholder="Search Junaid, 2025BCSE..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all" />
-          </div>
-
-          <!-- Filters Group -->
-          <div class="flex flex-wrap items-center gap-6 flex-grow md:justify-end">
-            <!-- Roles Multi-select Pill Group -->
-            <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="roles">
-              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="day scholars">Day Scholars</button>
-              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="hostellers">Hostellers</button>
-            </div>
-            
-            <!-- Genders -->
-            <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="genders">
-              <button class="cursor-pointer px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="male">Male</button>
-              <button class="cursor-pointer px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="female">Female</button>
-              <button class="cursor-pointer px-4 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="other">Other</button>
-            </div>
-
-            <!-- Statuses -->
-            <div class="flex p-1 bg-slate-200/50 rounded-xl border border-slate-200/60 shadow-inner overflow-hidden logs-filter-group gap-1" data-filter-type="statuses">
-              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="in">In</button>
-              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="out">Out</button>
-              <button class="cursor-pointer px-5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-colors" data-value="leave">Leave</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Table View Container -->
-        <div class="flex-grow min-h-0 overflow-y-scroll w-full custom-scrollbar relative">
-          <table class="w-full text-left border-collapse text-sm whitespace-nowrap min-w-[700px]">
-            <thead class="sticky top-0 bg-white shadow-sm z-10 text-slate-500 uppercase tracking-wider text-[11px] font-semibold">
-              <tr>
-                <th class="py-3 px-4 font-semibold w-12 text-center"></th>
-                <th class="py-3 px-4 font-semibold text-blue-600/80">Enrollment</th>
-                <th class="py-3 px-4 font-semibold text-blue-600/80">Name</th>
-                <th class="py-3 px-4 font-semibold text-blue-600/80">Gender</th>
-                <th class="py-3 px-4 font-semibold text-blue-600/80">Status</th>
-                <th class="py-3 px-4 font-semibold text-blue-600/80 text-right">Time Since</th>
-              </tr>
-            </thead>
-            <tbody id="logs-table-body" class="divide-y divide-slate-100">
-              <!-- Logs Rows Here generated by main.ts -->
-            </tbody>
-          </table>
-          <div id="logs-loading-indicator" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm z-20 flex items-center justify-center">
-            <i data-lucide="loader-2" class="w-8 h-8 text-blue-500 animate-spin"></i>
-          </div>
-        </div>
-
-        <!-- Footer Pagination -->
-        <div class="p-3 border-t border-slate-100 bg-white flex justify-between items-center text-sm">
-          <div class="flex items-center gap-3">
-            <button id="logs-prev-btn" class="cursor-pointer p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors">
-              <i data-lucide="arrow-left" class="w-5 h-5"></i>
-            </button>
-            <span class="font-medium text-slate-600" id="logs-page-indicator">Page: 1/1</span>
-            <button id="logs-next-btn" class="cursor-pointer p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors">
-              <i data-lucide="arrow-right" class="w-5 h-5"></i>
-            </button>
-          </div>
-          <div class="font-medium text-slate-600">
-            Total Results: <span id="logs-total-count">0</span>
-          </div>
-        </div>
-      </div>
-      <div id="view-analytics" class="hidden flex-col items-center justify-center h-[60vh] bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <i data-lucide="bar-chart-2" class="w-16 h-16 text-slate-300 mb-4"></i>
-        <h2 class="text-xl font-semibold text-slate-700">Analytics View</h2>
-        <p class="text-slate-500 mt-2">This feature is under development.</p>
-      </div>
-    </main>
-
-    <!-- Snackbar Container -->
     <div id="snackbar-container" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col gap-2 w-full max-w-sm px-4 pointer-events-none"></div>
 
-    <!-- Modals -->
-    <!-- Manual Entry Dialog -->
-    <dialog id="manual-entry-dialog" class="backdrop:bg-slate-900/50 rounded-2xl shadow-xl w-full max-w-md p-0 border-0 outline-none m-auto transition-[opacity,transform] open:animate-in open:fade-in open:zoom-in-95 starting:opacity-0 starting:scale-95 duration-200">
-      <div class="bg-white rounded-2xl overflow-hidden">
-        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 class="text-lg font-semibold text-slate-900 font-outfit">Add Entry</h3>
-          <button class="cursor-pointer close-dialog-btn p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600 rounded-lg transition-colors">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-        <form id="manual-entry-form" class="p-6 space-y-4">
-          <!-- Enrollment input -->
-          <div>
-            <label for="enrollment-input" class="block text-sm font-medium text-slate-700 mb-1.5">Student Enrollment No.</label>
-            <div class="relative">
-              <input type="text" id="enrollment-input" autocomplete="off" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-9 transition-all" placeholder="e.g. 2025BCSE093">
-              <div id="enrollment-status-icon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
-                <i data-lucide="loader-2" class="w-4 h-4 text-slate-400 animate-spin hidden" id="enroll-checking-icon"></i>
-                <i data-lucide="check" class="w-4 h-4 text-emerald-500 hidden" id="enroll-valid-icon"></i>
-                <i data-lucide="x" class="w-4 h-4 text-red-400 hidden" id="enroll-invalid-icon"></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mini student profile preview (content injected by JS) -->
-          <div id="entry-student-preview" class="hidden rounded-xl border border-slate-100 overflow-hidden transition-all bg-white shadow-sm min-h-[64px]">
-          </div>
-
-          <!-- Mark on Leave checkbox -->
-          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
-            <input type="checkbox" id="mark-on-leave" class="cursor-pointer w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-            <div>
-              <p class="text-sm font-medium text-slate-700">Mark on Leave</p>
-              <p class="text-xs text-slate-500">Student will be recorded as on leave (not a regular OUT entry)</p>
-            </div>
-          </label>
-
-          <div class="flex justify-end gap-3 border-t border-slate-100 pt-4">
-            <button type="button" class="cursor-pointer close-dialog-btn px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Cancel</button>
-            <button type="submit" id="manual-entry-submit-btn" disabled class="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-40 disabled:pointer-events-none">Add Entry</button>
-          </div>
-        </form>
-      </div>
-    </dialog>
-
-    <!-- Student Info Dialog -->
-    <dialog id="student-info-dialog" class="backdrop:bg-slate-900/60 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-0 border-0 outline-none m-auto open:flex open:flex-col overflow-hidden">
-      <!-- Header -->
-      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-        <h3 class="text-lg font-semibold text-slate-900">Student Profile</h3>
-        <button class="cursor-pointer close-dialog-btn p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Body: scrollable -->
-      <div class="flex flex-col overflow-y-auto flex-grow custom-scrollbar" id="student-info-content">
-        <!-- Shimmer injected here by JS while loading -->
-      </div>
-    </dialog>
+    <div id="dialog-root"></div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

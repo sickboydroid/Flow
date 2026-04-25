@@ -1,0 +1,21 @@
+<dialog data-dialog class="backdrop:bg-slate-900/50 rounded-2xl shadow-xl w-full max-w-lg p-0 border-0 outline-none m-auto">
+  <div class="bg-white rounded-2xl overflow-hidden relative">
+    <button data-close class="absolute top-3 right-3 z-10 p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-lg transition-colors cursor-pointer">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+    <div class="flex border-b border-slate-100 bg-slate-50 pr-10">
+      <button data-tab="student" class="entry-tab-btn cursor-pointer flex-1 px-4 py-3.5 text-sm font-semibold text-blue-700 border-b-2 border-blue-600 transition-colors">
+        <i data-lucide="graduation-cap" class="w-4 h-4 inline mr-1.5 pointer-events-none"></i>Student
+      </button>
+      <button data-tab="vehicle" class="entry-tab-btn cursor-pointer flex-1 px-4 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition-colors">
+        <i data-lucide="car" class="w-4 h-4 inline mr-1.5 pointer-events-none"></i>Vehicle
+      </button>
+      <button data-tab="visitor" class="entry-tab-btn cursor-pointer flex-1 px-4 py-3.5 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition-colors">
+        <i data-lucide="user-plus" class="w-4 h-4 inline mr-1.5 pointer-events-none"></i>Visitor
+      </button>
+    </div>
+    <div data-pane="student" class="entry-pane"></div>
+    <div data-pane="vehicle" class="entry-pane hidden"></div>
+    <div data-pane="visitor" class="entry-pane hidden"></div>
+  </div>
+</dialog>

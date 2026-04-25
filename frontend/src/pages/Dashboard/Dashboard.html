@@ -1,0 +1,15 @@
+<section class="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full min-h-0" data-slot="last-scanned"></section>
+
+<section class="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full min-h-0 relative">
+  <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 shrink-0">
+    <div>
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Recent Logs</h2>
+      <p data-recent-subtitle class="text-xs text-slate-400 mt-0.5 hidden"></p>
+    </div>
+  </div>
+  <div data-recent-list class="flex-grow min-h-0 overflow-y-auto overflow-x-auto relative custom-scrollbar"></div>
+  <button data-add-entry class="cursor-pointer mx-4 mb-4 mt-2 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 outline-none shrink-0">
+    <i data-lucide="plus" class="w-5 h-5 pointer-events-none"></i>
+    Add Entry
+  </button>
+</section>

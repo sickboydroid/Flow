@@ -1,0 +1,46 @@
+<div class="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between bg-slate-50 z-10">
+  <div data-slot="search" class="relative w-full md:w-72"></div>
+  <div class="flex items-center gap-3">
+    <div data-slot="filter-status"></div>
+  </div>
+</div>
+<div class="flex-grow min-h-0 overflow-y-auto custom-scrollbar relative">
+  <div data-list></div>
+  <div data-loading class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm z-20 flex items-center justify-center">
+    <i data-lucide="loader-2" class="w-8 h-8 text-blue-500 animate-spin"></i>
+  </div>
+</div>
+<div data-slot="pagination" class="p-3 border-t border-slate-100 bg-white flex justify-between items-center text-sm shrink-0 z-10"></div>
+
+<template data-row>
+  <div class="vehicle-row flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer even:bg-slate-50/40 transition-colors">
+    <div class="flex items-center gap-4">
+      <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+        <i data-lucide="car" class="w-5 h-5 text-slate-500"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span data-plate class="font-mono font-bold text-slate-800 tracking-widest"></span>
+          <span data-direction class="px-2 py-0.5 rounded-full text-xs font-semibold"></span>
+        </div>
+        <p data-vehicle-type class="text-xs text-slate-500 mt-0.5"></p>
+        <p data-remarks class="text-xs text-slate-400 mt-0.5 italic hidden"></p>
+      </div>
+    </div>
+    <div class="text-right shrink-0">
+      <p data-date class="text-xs font-medium text-slate-500"></p>
+      <p data-time class="text-xs text-slate-400"></p>
+    </div>
+  </div>
+</template>
+
+<template data-empty>
+  <div class="flex flex-col items-center justify-center h-full text-slate-400 gap-3 p-10">
+    <i data-lucide="car" class="w-10 h-10 opacity-40"></i>
+    <p class="text-sm">No vehicles found</p>
+  </div>
+</template>
+
+<template data-error>
+  <div class="p-8 text-center text-red-400">Failed to load vehicles</div>
+</template>

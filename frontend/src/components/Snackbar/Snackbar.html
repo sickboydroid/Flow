@@ -1,0 +1,11 @@
+<template data-toast>
+  <div class="snackbar-toast group relative flex items-center gap-3 w-full px-4 py-3 rounded-xl shadow-xl ring-1 ring-black/5 pointer-events-auto backdrop-blur-md overflow-hidden">
+    <span data-accent aria-hidden="true" class="absolute left-0 top-0 bottom-0 w-1"></span>
+    <i data-icon class="w-5 h-5 shrink-0"></i>
+    <p data-message class="text-sm font-medium leading-snug pr-2 grow"></p>
+    <button data-dismiss aria-label="Dismiss" class="cursor-pointer p-1 -mr-1 rounded-md text-white/70 hover:text-white hover:bg-white/15 transition-colors">
+      <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
+    </button>
+    <span data-progress aria-hidden="true" class="snackbar-progress absolute left-0 right-0 bottom-0 h-0.5 bg-white/40 origin-left"></span>
+  </div>
+</template>
