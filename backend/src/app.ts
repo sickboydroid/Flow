@@ -1,29 +1,49 @@
-import express, { Application, Request, Response } from "express";
+/**
+ * Express application factory.
+ *
+ * Wires up middleware, the API router, the static profile-picture mount,
+ * and the global error / 404 fallbacks. The HTTP listener itself lives
+ * in `server.ts` so this module stays test-friendly (no side effects).
+ */
+
+import express, { type Application, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import apiRoutes from "./routes/api.routes.js";
+import { logger } from "./utils/logger.js";
 
 const app: Application = express();
 
-// --- Middlewares ---
-// Enable CORS for vite frontend
+// --- Request logging --------------------------------------------------------
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  logger.info(`[${req.method}] ${req.url}`);
+  next();
+});
+
+// --- Standard middleware ----------------------------------------------------
 app.use(cors());
-// Parse incoming JSON requests
 app.use(express.json());
-// Parse URL-encoded data
 app.use(express.urlencoded({ extended: true }));
 
-
-// --- Static files ---
+// --- Static assets ----------------------------------------------------------
+// Profile pictures are served straight from disk under /profilepics/<file>
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/profilepics", express.static(path.join(__dirname, "../public/profilepics")));
 
-// --- API Routes---
+// --- API routes -------------------------------------------------------------
 app.use("/api", apiRoutes);
 
-// --- 404 Fallback ---
+// --- Centralized error handler ---------------------------------------------
+// Express recognizes a 4-arg middleware as the error handler. The unused
+// `next` param is required by Express; renaming to `_next` silences linters.
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  logger.error(`Error on ${req.method} ${req.url}: ${err.message}`, { stack: err.stack });
+  res.status(500).json({ error: "Internal Error" });
+});
+
+// --- 404 fallback -----------------------------------------------------------
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ status: "error", message: "Route not found" });
 });

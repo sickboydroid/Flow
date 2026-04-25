@@ -1,13 +1,22 @@
+/**
+ * Student entry/exit log.
+ *
+ * Linked to a `Student` via the `enrollment` field (no ObjectId here —
+ * we deliberately key by the human enrollment code so logs survive a
+ * student document being recreated). `deleted` is a soft-delete flag;
+ * the API filters those out by default. The `student` virtual joins
+ * back to the parent profile when `populate("student")` is called.
+ */
+
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IStudentLog extends Document {
   enrollment: string;
   type: "IN" | "OUT" | "LEAVE";
   timestamp: Date;
-  denied: boolean;
-  lastedit_timestamp: Date;
-  update_count: number;
-  mode_of_entry: "SCAN" | "MANUAL";
+  deleted: boolean;
+  mode_of_entry: "RFID" | "MANUAL";
+  remarks?: string;
 }
 
 const StudentLogSchema: Schema = new Schema(
@@ -15,10 +24,9 @@ const StudentLogSchema: Schema = new Schema(
     enrollment: { type: String, required: true, ref: "Student" },
     type: { type: String, enum: ["IN", "OUT", "LEAVE"], required: true },
     timestamp: { type: Date, default: Date.now },
-    denied: { type: Boolean, default: false },
-    lastedit_timestamp: { type: Date, default: Date.now },
-    update_count: { type: Number, default: 0 },
-    mode_of_entry: { type: String, enum: ["SCAN", "MANUAL"], default: "SCAN" }
+    deleted: { type: Boolean, default: false },
+    mode_of_entry: { type: String, enum: ["RFID", "MANUAL"], default: "RFID" },
+    remarks: { type: String }
   },
   {
     timestamps: true,
@@ -26,6 +34,8 @@ const StudentLogSchema: Schema = new Schema(
     toObject: { virtuals: true },
   },
 );
+
+StudentLogSchema.index({ timestamp: -1 });
 
 StudentLogSchema.virtual("student", {
   ref: "Student",

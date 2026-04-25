@@ -1,21 +1,34 @@
-import { Router, Request, Response, NextFunction } from "express";
-import { getInfo, getLogs, getStatus, updateStatus, updateLog, addManualLog, getStudentStats } from "../controllers/student.controller.js";
+/**
+ * Student domain routes.
+ *
+ * Mounted at /api/student by the top-level router. Each handler lives
+ * in `student.controller.ts` and is documented there.
+ */
+
+import { Router } from "express";
+import {
+  getInfo,
+  getLogs,
+  listStudentsWithStatus,
+  getStudentStats,
+  getStatus,
+  updateStatus,
+  updateLog,
+  addManualLog,
+  checkValid,
+} from "../controllers/student.controller.js";
 
 const router = Router();
 
-// Middleware to ensure enroll query param is present
-router.use((req: Request, res: Response, next: NextFunction): void => {
-  if (!req.query.enroll) {
-    res.status(400).json({ error: "Missing enroll query parameter" });
-    return;
-  }
-  next();
-});
-
+// --- Reads ------------------------------------------------------------------
+router.get("/valid", checkValid);
 router.get("/info", getInfo);
 router.get("/logs", getLogs);
+router.get("/all", listStudentsWithStatus);
 router.get("/stats", getStudentStats);
 router.get("/status", getStatus);
+
+// --- Writes -----------------------------------------------------------------
 router.post("/update/status", updateStatus);
 router.put("/update/log", updateLog);
 router.post("/log/manual", addManualLog);
