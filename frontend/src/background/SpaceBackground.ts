@@ -57,8 +57,8 @@ interface BigBody {
   rotSpeed: number;
 }
 
-const STAR_COUNT = 600;
-const FLUID_OBJ_COUNT = 40;
+const STAR_COUNT = 300;
+const FLUID_OBJ_COUNT = 80;
 
 const STAR_COLORS = [
   '255, 255, 255',
@@ -258,7 +258,6 @@ export class SpaceBackground {
     this.frame++;
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.W, this.H);
-
     if (this.frame % 800 === 0 && Math.random() > 0.6) this.spawnBigBody();
     for (let i = this.bigBodies.length - 1; i >= 0; i--) {
       const p = this.bigBodies[i];

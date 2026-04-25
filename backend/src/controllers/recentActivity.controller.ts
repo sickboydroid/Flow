@@ -36,7 +36,7 @@ export const listRecentActivity = async (req: Request, res: Response): Promise<v
     const [studentLogs, vehicleLogs, visitorLogs] = await getRecentLogs(limit);
 
     // in case you only want unique logs of each type (like each student has only the latest log in recent logs)
-    // const [studentLogs, vehicleLogs, visitorLogs] = await getRecentLogsRecent(limit);
+    // const [studentLogs, vehicleLogs, visitorLogs] = await getRecentLogsUnique(limit);
 
     const mixed: MixedLog[] = [
       ...studentLogs.map((l) => ({ ...l, logType: "student" as const })),
@@ -76,10 +76,7 @@ async function getRecentLogs(limit: number) {
  * Same as getRecentLogs(...), however only returns unique students and vehicles from each category
  * For example if a student has logged multiple times, it will only show its latest log in the recent logs
  */
-async function getRecentLogsRecent(limit: number) {
-  // Each domain is queried for its newest `limit` events; we then merge
-  // and slice. This keeps the work O(limit) per collection rather than
-  // pulling whole tables and sorting in memory.
+async function getRecentLogsUnique(limit: number) {
   return Promise.all([
     StudentLog.aggregate([
       { $match: { deleted: false } },
@@ -98,10 +95,10 @@ async function getRecentLogsRecent(limit: number) {
           from: "students",              // collection name
           localField: "enrollment",
           foreignField: "enrollment",
-          as: "student"
+          as: "student" // load as student feild
         }
       },
-      { $unwind: "$student" }
+      { $unwind: "$student" } // kinda populate
     ]),
     VehicleLog.aggregate([
       { $sort: { timestamp: -1 } },

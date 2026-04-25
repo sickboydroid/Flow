@@ -372,11 +372,9 @@ function buildStudentMatchStage(req: Request): Record<string, unknown> {
   }
 
   if (roles) {
-    const rolesArr = roles.split(",").map((s) => s.toLowerCase());
-    const isHostellerMatch: boolean[] = [];
-    if (rolesArr.includes("hostellers")) isHostellerMatch.push(true);
-    if (rolesArr.includes("day scholars")) isHostellerMatch.push(false);
-    if (isHostellerMatch.length > 0) stage.isHosteller = { $in: isHostellerMatch };
+    // roles = "hosteller" | "day_scholar"; 
+    if (roles == "hosteller") stage.isHosteller = true;
+    else if (roles == "day_scholar") stage.isHosteller = false;
   }
 
   return stage;
