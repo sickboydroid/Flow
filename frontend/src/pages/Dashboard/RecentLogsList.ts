@@ -26,7 +26,7 @@ export interface RecentLogsListProps {
   onVisitorClick: (visitor: Extract<RecentLog, { logType: 'visitor' }>) => void;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 30;
 
 export class RecentLogsList extends Component<RecentLogsListProps> {
   private rowsHost!: HTMLElement;
